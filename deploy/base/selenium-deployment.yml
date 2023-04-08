@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: selenium-chrome-deployment
+  labels:
+    app: selenium-chrome
+spec:
+  replicas: 1
+
+  template:
+    metadata:
+      labels:
+        app: selenium-chrome
+    spec:
+      containers:
+        - name: chrome
+          image: selenium/standalone-chrome
+          ports:
+            - containerPort: 4444
+
+  selector:
+    matchLabels:
+      app: selenium-chrome

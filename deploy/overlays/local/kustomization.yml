@@ -1,0 +1,14 @@
+commonAnnotations:
+  note: This kustomization is meant for local development
+resources:
+  - ../../base
+images:
+  - name: parser
+    newName: parser
+    newTag: local
+namespace: bls-parser
+secretGenerator:
+  - name: telegram-secret
+    behavior: replace
+    envs:
+      - .env
