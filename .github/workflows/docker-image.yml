@@ -1,0 +1,26 @@
+name: Parser Image CI
+
+on:
+  push:
+    branches: [ "master" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Login
+        uses: google-github-actions/setup-gcloud@v0
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Configure Docker
+        run: gcloud auth configure-docker --quiet
+
+      - name: Build and push Docker images
+        uses: docker/build-push-action@v3.2.0
+        with:
+          file: Dockerfile
+          push: true
+          tags: europe-central2-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/bls-notifications/parser:master-${{ github.run_number }}-${{ github.run_attempt }}
