@@ -14,6 +14,13 @@ spec:
     spec:
       containers:
         - name: chrome
+          resources:
+            requests:
+              cpu: 100m
+              memory: 600m
+            limits:
+              cpu: 300m
+              memory: 600m
           image: selenium/standalone-chrome
           ports:
             - containerPort: 4444

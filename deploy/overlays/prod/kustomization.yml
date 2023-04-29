@@ -1,0 +1,12 @@
+resources:
+  - ../../base
+images:
+  - name: parser
+    newName: europe-central2-docker.pkg.dev/bls-booker/bls-notifications/parser
+    newTag: v0.0.2
+namespace: bls-parser
+secretGenerator:
+  - name: telegram-secret
+    behavior: replace
+    envs:
+      - .env

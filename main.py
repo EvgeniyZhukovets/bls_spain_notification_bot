@@ -1,25 +1,37 @@
-import datetime
+import argparse
+import http
 import os
 import random
+from http import client
+import urllib
 from urllib.parse import urlencode
-from dataclasses import dataclass
 
-import click
-import requests
 from selenium import webdriver
 from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
-from selenium.webdriver.support.select import Select
+
+
+def __send_message(text: str, token: str, channel_id: str):
+    connection = http.client.HTTPSConnection("api.telegram.org")
+    notification_text = urllib.parse.urlencode({"text": text})
+    url = f"/bot{token}/sendMessage?chat_id={channel_id}&{notification_text}"
+    connection.request("POST", url)
+    response = connection.getresponse()
+    if response.status != 200:
+        raise Exception(f"Failed to send message. Status code: {response.status}")
 
 
 def send_tg_message(text: str):
     bot_token = os.environ.get("API_TOKEN")
     channel_id = os.environ.get("NOTIFICATIONS_CHANNEL_ID")
-    notification_text = urlencode({"text": text})
-    requests.post(
-        f'https://api.telegram.org/bot{bot_token}/sendMessage?chat_id={channel_id}&{notification_text}'
-    )
+    __send_message(text, bot_token, channel_id)
+
+
+def send_tg_alert(text: str):
+    bot_token = os.environ.get("API_TOKEN")
+    channel_id = os.environ.get("ALERTS_CHANNEL_ID")
+    __send_message(text, bot_token, channel_id)
 
 
 def payload(driver: WebDriver, log_to_tg: bool):
@@ -33,9 +45,9 @@ def payload(driver: WebDriver, log_to_tg: bool):
         .click()
 
     driver \
-        .find_element(By.XPATH, '//*[@id="category"]')\
+        .find_element(By.XPATH, '//*[@id="category"]') \
         .click()
-    driver\
+    driver \
         .find_element(By.XPATH, '//select/option[@value="Normal"]') \
         .click()
 
@@ -73,35 +85,21 @@ def payload(driver: WebDriver, log_to_tg: bool):
                  "disabled" not in x.get_attribute("class").split(" ")]
 
     if len(open_days) > 0 and log_to_tg:
-        bot_token = os.environ.get("API_TOKEN")[:-1]
-        channel_id = os.environ.get("NOTIFICATIONS_CHANNEL_ID")
-        notification_text = urlencode({
-            "text": "There is a new appoitment slot open! https://armenia.blsspainvisa.com/appointment.php"
-        })
-        requests.post(
-            f'https://api.telegram.org/bot{bot_token}/sendMessage?chat_id={channel_id}&{notification_text}'
-        )
-
-
-@click.command()
-@click.option("--selenium_url", default="http://localhost:4444",
-              help="in the format http://host:port.")
-@click.option("--log-to-tg", "log_to_tg", is_flag=True, show_default=True,
-              default=False,
-              help="Enables sending messages to telegram channel")
-def wrapper(selenium_url: str, log_to_tg):
-    with webdriver.Remote(f"{selenium_url}/wd/hub",
-                          DesiredCapabilities.CHROME) as driver:
-        try:
-            payload(driver, log_to_tg)
-        except Exception as e:
-            print(e)
-            with open("error_screen.png", "wb") as file:
-                driver.get_screenshot_as_file(file.name)
-            if log_to_tg:
-                send_tg_message("Error occurred, please, check the bot logs.")
-            raise e
+        send_tg_message("There is a new appoitment slot open! https://armenia.blsspainvisa.com/appointment.php")
 
 
 if __name__ == '__main__':
-    wrapper()
+    parser = argparse.ArgumentParser(description='Wrapper for Selenium')
+    parser.add_argument('--selenium_url', default='http://localhost:4444',
+                        help='in the format http://host:port.')
+    parser.add_argument('--log-to-tg', action='store_true', default=False,
+                        help='Enables sending messages to telegram channel')
+    args = parser.parse_args()
+
+    with webdriver.Remote(f"{args.selenium_url}/wd/hub",
+                          DesiredCapabilities.CHROME) as driver:
+        try:
+            payload(driver, args.log_to_tg)
+        except Exception as e:
+            send_tg_alert("Error occurred, please, check the bot logs.")
+            raise e
