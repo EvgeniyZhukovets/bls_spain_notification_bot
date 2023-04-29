@@ -16,7 +16,7 @@ jobs:
           service_account_key: ${{ secrets.GCP_SA_KEY }}
 
       - name: Configure Docker
-        run: gcloud auth configure-docker --quiet
+        run: gcloud auth configure-docker --quiet europe-central2-docker.pkg.dev
 
       - name: Build and push Docker images
         uses: docker/build-push-action@v3.2.0
