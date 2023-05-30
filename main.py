@@ -23,13 +23,13 @@ def __send_message(text: str, token: str, channel_id: str):
 
 
 def send_tg_message(text: str):
-    bot_token = os.environ.get("API_TOKEN")
+    bot_token = os.environ.get("API_TOKEN_NOTIFICATION")
     channel_id = os.environ.get("NOTIFICATIONS_CHANNEL_ID")
     __send_message(text, bot_token, channel_id)
 
 
 def send_tg_alert(text: str):
-    bot_token = os.environ.get("API_TOKEN")
+    bot_token = os.environ.get("API_TOKEN_ALERT")
     channel_id = os.environ.get("ALERTS_CHANNEL_ID")
     __send_message(text, bot_token, channel_id)
 
