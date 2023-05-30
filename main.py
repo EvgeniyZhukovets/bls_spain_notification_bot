@@ -99,6 +99,8 @@ if __name__ == '__main__':
     with webdriver.Remote(f"{args.selenium_url}/wd/hub",
                           DesiredCapabilities.CHROME) as driver:
         try:
+            send_tg_alert("Started.")
+            send_tg_message("Started.")
             payload(driver, args.log_to_tg)
         except Exception as e:
             send_tg_alert("Error occurred, please, check the bot logs.")
