@@ -1,0 +1,9 @@
+version: '3.7'
+
+services:
+  spain_bot:
+    restart: always
+    container_name: spain_bot
+    build:
+      context: .
+      dockerfile: Dockerfile
